@@ -10,7 +10,7 @@ namespace Core.Interfaces
         Task<Product?> GetByIdAsync(int id);
         Task<Product> AddAsync(Product product);
         Task<bool> ExistsAsync(int id);
-        void UpdateAsync(Product product);
+        Task UpdateAsync(Product product);
         Task DeleteAsync(int id);
         Task<bool> SaveChangesAsync();
     }

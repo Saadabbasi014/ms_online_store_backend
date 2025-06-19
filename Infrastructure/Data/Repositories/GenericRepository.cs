@@ -48,6 +48,26 @@ namespace Infrastructure.Data.Repositories
             return await context.Set<T>().FindAsync(id);
         }
 
+        public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
+        {
+           return await ApplySpecification(spec).FirstOrDefaultAsync();
+        }
+
+        public async Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec)
+        {
+            return await ApplySpecification(spec).FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyList<T?>> GetListAsync(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<TResult?>> GetListAsync<TResult>(ISpecification<T, TResult> spec)
+        {
+            return await ApplySpecification(spec).ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await context.SaveChangesAsync() > 0;
@@ -58,6 +78,15 @@ namespace Infrastructure.Data.Repositories
             context.Set<T>().Attach(entity);
             context.Entry(entity).State = EntityState.Modified;
             await Task.CompletedTask;
+        }
+
+        private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery(context.Set<T>().AsQueryable(), spec);
+        }
+        private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T ,TResult> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery<T, TResult>(context.Set<T>().AsQueryable(), spec);
         }
     }
 }
