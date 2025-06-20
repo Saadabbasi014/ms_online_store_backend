@@ -1,23 +1,11 @@
 ﻿using Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Specification
 {
     public class BaseSpecification<T>(Expression<Func<T, bool>>? _criteria) : ISpecification<T>
     {
         protected BaseSpecification() : this(null) { }
-
-        //private readonly Expression<Func<T, bool>>? _criteria;
-
-        //public BaseSpecification(Expression<Func<T, bool>>? criteria)
-        //{
-        //    _criteria = criteria ?? throw new ArgumentNullException(nameof(criteria));
-        //}
 
         public Expression<Func<T, bool>>? Criteria => _criteria;
 
@@ -26,6 +14,21 @@ namespace Core.Specification
         public Expression<Func<T, object>>? OrderByDesc { get; private set;}
 
         public bool IsDistinct { get; private set; }
+
+        public bool IsPagingEnable { get; private set; }
+
+        public int Take { get; private set; }
+
+        public int Skip { get; private set; }
+
+        public IQueryable<T> ApplyCriteria(IQueryable<T> query)
+        {
+            if (Criteria != null)
+            {
+                query = query.Where(Criteria);
+            }
+            return query;
+        }
 
         protected void AddOrderBy(Expression<Func<T, object>>? orderBy)
         {
@@ -40,6 +43,13 @@ namespace Core.Specification
         protected void ApplyDistinct()
         {
             IsDistinct = true;
+        }
+
+        protected void ApplyPaging(int skip, int take)
+        {
+            Skip = skip;
+            Take = take;
+            IsPagingEnable = true;
         }
     }
 

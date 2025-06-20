@@ -27,10 +27,17 @@ namespace Infrastructure.Data
             {
                 query = query.OrderByDescending(spec.OrderByDesc);
             }
+
             if (spec.IsDistinct)
             {
                 query = query.Distinct();
             }
+
+            if (spec.IsPagingEnable)
+            {
+                query = query.Skip(spec.Skip).Take(spec.Take);
+            }
+
             return query;
         }
 
@@ -52,17 +59,23 @@ namespace Infrastructure.Data
                 query = query.OrderByDescending(spec.OrderByDesc);
             }
 
+            IQueryable<TResult>? selectQuery = query as IQueryable<TResult>;
+
             if (spec.Select != null)
             {
-                IQueryable<TResult> selectQuery = query.Select(spec.Select);
-
-                if (spec.IsDistinct)
-                {
-                    selectQuery = selectQuery.Distinct();
-                }
-
-                return selectQuery;
+                selectQuery = query.Select(spec.Select);
             }
+
+            if (spec.IsDistinct)
+            {
+                selectQuery = selectQuery?.Distinct();
+            }
+
+            if (spec.IsPagingEnable)
+            {
+                selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
+            }
+
             return query.Cast<TResult>();
         }
     }

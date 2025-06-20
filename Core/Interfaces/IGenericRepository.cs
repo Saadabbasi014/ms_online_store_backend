@@ -20,5 +20,6 @@ namespace Core.Interfaces
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
         Task<bool> SaveChangesAsync();
+        Task<int> CountAsync(ISpecification<T> spec);
     }
 }
