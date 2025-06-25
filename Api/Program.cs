@@ -3,6 +3,7 @@ using Infrastructure.Data;
 using Core.Interfaces;
 using Infrastructure.Repositories;
 using Infrastructure.Data.Repositories;
+using Api.Middlewere;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.  
@@ -31,6 +34,14 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddlewere>();
+
+app.UseCors(policy =>
+    policy.AllowAnyHeader()
+          .AllowAnyMethod()
+          .WithOrigins("https://localhost:4200", "http://localhost:4200")
+          .AllowCredentials());
 
 app.MapControllers();
 
