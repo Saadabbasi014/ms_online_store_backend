@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data;
 using Core.Interfaces;
 using Infrastructure.Repositories;
 using Infrastructure.Data.Repositories;
 using Api.Middlewere;
+using StackExchange.Redis;
+using Infrastructure.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,10 +21,30 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddCors();
+builder.Services.AddSingleton<ICartService, CartService>();
+//builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+//{
+//    var connectionString = builder.Configuration.GetConnectionString("Redis") ?? throw new ArgumentNullException("Redis connection string is not configured.");
+//    //if (!string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException("Redis connection string is not configured.");
+//    var configuration = ConfigurationOptions.Parse(connectionString!, true);
+//    return ConnectionMultiplexer.Connect(configuration);
+//});
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Redis");
 
+    var config = ConfigurationOptions.Parse(connectionString);
+    config.Ssl = false;
+    config.Password = "RUx0khOatMoFNqvZHd4auY6VBCgOAym4";
+    config.AbortOnConnectFail = true;
+
+    return ConnectionMultiplexer.Connect(config);
+
+
+});
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.  
 if (app.Environment.IsDevelopment())
@@ -47,9 +69,9 @@ app.MapControllers();
 
 try
 {
-    using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-    await context.Database.MigrateAsync();
+    //using var scope = app.Services.CreateScope();
+    //var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+    //await context.Database.MigrateAsync();
 }
 catch (Exception ex)
 {

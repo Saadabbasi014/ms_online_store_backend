@@ -62,14 +62,18 @@ namespace Api.Controllers
         public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
         {
             var spec = new BrandListSpecfication();
-            return Ok(await _genericRepository.GetListAsync(spec));
+            //return Ok(await _genericRepository.GetListAsync(spec));
+            return Ok((await _genericRepository.GetListAsync<string>(spec)).Distinct().ToList());
+
         }
 
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
         {
             var spec = new TypeListSpecification();
-            return Ok(await _genericRepository.GetListAsync(spec));
+            //return Ok(await _genericRepository.GetListAsync(spec));
+            return Ok((await _genericRepository.GetListAsync<string>(spec)).Distinct().ToList());
+
         }
     }
 }
