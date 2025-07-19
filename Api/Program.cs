@@ -6,6 +6,7 @@ using Infrastructure.Data.Repositories;
 using Api.Middlewere;
 using StackExchange.Redis;
 using Infrastructure.Services;
+using Core.Entites;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddAuthentication();
+builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<StoreContext>();
+
 //builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 //{
 //    var connectionString = builder.Configuration.GetConnectionString("Redis") ?? throw new ArgumentNullException("Redis connection string is not configured.");
@@ -61,11 +65,13 @@ app.UseMiddleware<ExceptionMiddlewere>();
 
 app.UseCors(policy =>
     policy.AllowAnyHeader()
+          .AllowCredentials()
           .AllowAnyMethod()
           .WithOrigins("https://localhost:4200", "http://localhost:4200")
           .AllowCredentials());
 
 app.MapControllers();
+app.MapGroup("api").MapIdentityApi<AppUser>();
 
 try
 {

@@ -2,17 +2,18 @@
 using Core.Entites;
 using System.Net.Http.Headers;
 using Infrastructure.Config;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Infrastructure.Data
 {
-    public class StoreContext : DbContext
+    public class StoreContext : IdentityDbContext<AppUser>
     {
         public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
         }
 
         public DbSet<Product> Products { get; set; }
-
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

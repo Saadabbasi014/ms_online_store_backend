@@ -20,11 +20,10 @@ public class CartController : ControllerBase
         return cart is null ? NotFound() : Ok(cart);
     }
 
-    [HttpPost("{id}")]
+    [HttpPost]
     public async Task<IActionResult> SaveCart([FromBody] ShopingCart cart)
     {
-        await _cartService.SaveCartAsync(cart);
-        return Ok();
+        return Ok(await _cartService.SaveCartAsync(cart));
     }
 
     [HttpDelete("{id}")]
