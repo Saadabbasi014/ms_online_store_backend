@@ -15,12 +15,12 @@ public class CartController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCart(string id)
-    {
+     {
         var cart = await _cartService.GetCartAsync(id);
         return cart is null ? NotFound() : Ok(cart);
     }
 
-    [HttpPost]
+    [HttpPost] 
     public async Task<IActionResult> SaveCart([FromBody] ShopingCart cart)
     {
         return Ok(await _cartService.SaveCartAsync(cart));

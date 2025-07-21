@@ -6,7 +6,8 @@ namespace Api.DTOs
     public class LoginDto
     {
         [Required]
-        public string UserName { get; set; } = string.Empty;
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]

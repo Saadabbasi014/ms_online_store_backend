@@ -5,7 +5,7 @@ namespace Api.Extensions
 {
     public static class AddressMappingExtentions
     {
-        public static AddressDto ToDo(this Address address)
+        public static AddressDto ToDto(this Address address)
         {
             if (address == null) throw new ArgumentNullException(nameof(address));
             return new AddressDto
