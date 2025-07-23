@@ -28,7 +28,7 @@ namespace Api.Controllers
             return Ok(new { Message = "User registered successfully" });
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult> Login(LoginDto loginDto)
         {
