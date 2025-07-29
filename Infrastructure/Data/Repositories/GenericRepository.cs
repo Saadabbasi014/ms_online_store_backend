@@ -95,7 +95,8 @@ namespace Infrastructure.Data.Repositories
         }
         private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T ,TResult> spec)
         {
-            return SpecificationEvaluator<T>.GetQuery<T, TResult>(context.Set<T>().AsQueryable(), spec);
+            return SpecificationEvaluator<T>.GetQuery<TResult>(context.Set<T>().AsQueryable(), spec);
+
         }
     }
 }
