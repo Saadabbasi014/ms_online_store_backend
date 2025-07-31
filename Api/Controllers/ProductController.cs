@@ -1,33 +1,24 @@
-﻿using Api.RequestHelper;
-using Core.Entites;
+﻿using Core.Entites;
 using Core.Interfaces;
 using Core.Specification;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Api.Controllers
 {
-    public class ProductController : BaseApiController
+    public class ProductController(IUnitOfWork unit) : BaseApiController
     {
-        private readonly IGenericRepository<Product> _genericRepository;
-        public ProductController(IGenericRepository<Product> productRepository)
-        {
-            _genericRepository = productRepository;
-        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] ProductSpecParams productSpec)
         {
             var spec = new ProductSpecification(productSpec);
-            return await CreatePageResult(_genericRepository, spec, productSpec.PageIndex, productSpec.PageSize);
+            return await CreatePageResult(unit.Repository<Product>(), spec, productSpec.PageIndex, productSpec.PageSize);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = await _genericRepository.GetByIdAsync(id);
+            var product = await unit.Repository<Product>().GetByIdAsync(id);
             if (product == null) return NotFound();
             return Ok(product);
         }
@@ -35,28 +26,32 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
-            var created = await _genericRepository.AddAsync(product);
-            return Ok(created);
+            await unit.Repository<Product>().AddAsync(product);
+            if(await unit.Complete()) return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return BadRequest("Problem creating product");
         }
 
         [HttpPut]
         public async Task<ActionResult> UpdateProduct(Product product)
         {
-            if (!await _genericRepository.ExistsAsync(product.Id))
+            if (!await unit.Repository<Product>().ExistsAsync(product.Id))
                 return BadRequest("Product Not Found.");
 
-            await _genericRepository.UpdateAsync(product);
-            return NoContent();
+            await unit.Repository<Product>().UpdateAsync(product);
+
+            if (await unit.Complete()) return NoContent();
+            return BadRequest("Problem creating product");
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteProduct(int id)
         {
-            var product = await _genericRepository.GetByIdAsync(id);
+            var product = await unit.Repository<Product>().GetByIdAsync(id);
             if (product == null) return NotFound();
 
-            await _genericRepository.DeleteAsync(id);
-            return NoContent();
+            await unit.Repository<Product>().DeleteAsync(id);
+            if (await unit.Complete()) return NoContent();
+            return BadRequest("Problem deleting product");
         }
 
         [HttpGet("brands")]
@@ -64,7 +59,7 @@ namespace Api.Controllers
         {
             var spec = new BrandListSpecfication();
             //return Ok(await _genericRepository.GetListAsync(spec));
-            return Ok((await _genericRepository.GetListAsync<string>(spec)).Distinct().ToList());
+            return Ok((await unit.Repository<Product>().GetListAsync<string>(spec)).Distinct().ToList());
 
         }
 
@@ -73,7 +68,7 @@ namespace Api.Controllers
         {
             var spec = new TypeListSpecification();
             //return Ok(await _genericRepository.GetListAsync(spec));
-            return Ok((await _genericRepository.GetListAsync<string>(spec)).Distinct().ToList());
+            return Ok((await unit.Repository<Product>().GetListAsync<string>(spec)).Distinct().ToList());
 
         }
     }

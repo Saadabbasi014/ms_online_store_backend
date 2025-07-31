@@ -9,8 +9,7 @@ namespace Infrastructure.Services
     public class PaymentServices(
             IConfiguration config,
             ICartService cartService,
-            IGenericRepository<Product> productRepo,
-            IGenericRepository<DeliveryMethod> deliveryRepo
+            IUnitOfWork unit
             ) : IPaymentService
     {
         public async Task<ShopingCart?> CreateOrUpdateShoppingCartAsync(string cartId)
@@ -25,7 +24,7 @@ namespace Infrastructure.Services
 
             if (cart.DeliveryMethodId != 0)
             {
-                var deliveryMethod = deliveryRepo.GetByIdAsync(cart.DeliveryMethodId).Result;
+                var deliveryMethod = unit.Repository<DeliveryMethod>().GetByIdAsync(cart.DeliveryMethodId).Result;
                 if (deliveryMethod != null)
                 {
                     shippingPrice = deliveryMethod.Price;
@@ -34,7 +33,7 @@ namespace Infrastructure.Services
 
             foreach (var item in cart.Items)
             {
-                var productItem = await productRepo.GetByIdAsync(item.ProductId);
+                var productItem = await unit.Repository<Product>().GetByIdAsync(item.ProductId);
 
                 if (productItem == null) continue;
 

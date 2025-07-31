@@ -11,7 +11,7 @@ namespace Core.Specification
     {
         public TypeListSpecification()
         {
-            AddSelect(p => p.Brand);
+            AddSelect(p => p.Type);
             ApplyDistinct();
         }
     }
