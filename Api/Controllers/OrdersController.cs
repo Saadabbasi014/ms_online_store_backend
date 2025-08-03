@@ -13,6 +13,7 @@ namespace Api.Controllers
     public class OrdersController(ICartService cartService, IUnitOfWork unitOfWork) : BaseApiController
     {
         [Authorize]
+        [HttpPost]
         public async Task<ActionResult<Order>> CreateOrder(CreateOrderDto orderDto)
         {
             var email = User.GetUserEmail();
@@ -76,17 +77,21 @@ namespace Api.Controllers
 
             var orders = await unitOfWork.Repository<Order>().GetListAsync(spec);
 
-            return Ok(orders);
+            var orderToReturn = orders.Select(o => o.ToDto()).ToList();
+
+            return Ok(orderToReturn);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Order>> GetOrderById(int id)
+        public async Task<ActionResult<OrderDto>> GetOrderById(int id)
         {
             var spec = new OrderSpecification(User.GetUserEmail(), id);
 
-            var order = await unitOfWork.Repository<Order>().GetByIdAsync(id);
+            var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
 
-            return Ok(order);
+            if (order != null) return NotFound();
+
+            return order!.ToDto();
         }
     }
 }

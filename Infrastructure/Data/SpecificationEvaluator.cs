@@ -42,46 +42,8 @@ namespace Infrastructure.Data
             query = spec.Includes!.Aggregate(query, (current, include) => current.Include(include));
             query = spec.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
 
-            return query;
+            return query; 
         }
-
-        //public static IQueryable<TResult> GetQuery<ISpec, TResult>(IQueryable<T> query,
-        //    ISpecification<T, TResult> spec)
-        //{
-        //    if (spec.Criteria != null)
-        //    {
-        //        query = query.Where(spec.Criteria); // x => x.Brand == brand 
-        //    }
-
-        //    if (spec.OrderBy != null)
-        //    {
-        //        query = query.OrderBy(spec.OrderBy);
-        //    }
-
-        //    if (spec.OrderByDesc != null)
-        //    {
-        //        query = query.OrderByDescending(spec.OrderByDesc);
-        //    }
-
-        //    IQueryable<TResult>? selectQuery = query as IQueryable<TResult>;
-
-        //    if (spec.Select != null)
-        //    {
-        //        selectQuery = query.Select(spec.Select);
-        //    }
-
-        //    if (spec.IsDistinct)
-        //    {
-        //        selectQuery = selectQuery?.Distinct();
-        //    }
-
-        //    if (spec.IsPagingEnable)
-        //    {
-        //        selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
-        //    }
-
-        //    return query.Cast<TResult>();
-        //}
 
         public static IQueryable<TResult> GetQuery<TResult>(IQueryable<T> query, ISpecification<T, TResult> spec)
         {
