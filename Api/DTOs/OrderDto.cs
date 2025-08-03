@@ -13,7 +13,7 @@ namespace Api.DTOs
         public required List<OrderItemDto> OrderdItems { get; set; }
         public decimal SubTotal { get; set; }
         public decimal ShippingPrice { get; set; }
-        public decimal Toatl { get; set; }
+        public decimal Total { get; set; }
         public required string Status { get; set; }
         public required string PaymentIntentId { get; set; }
     }

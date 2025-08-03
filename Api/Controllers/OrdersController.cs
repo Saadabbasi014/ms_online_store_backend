@@ -89,7 +89,7 @@ namespace Api.Controllers
 
             var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
 
-            if (order != null) return NotFound();
+            if (order == null) return NoContent();
 
             return order!.ToDto();
         }

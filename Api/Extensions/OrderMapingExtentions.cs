@@ -20,7 +20,7 @@ namespace Api.Extensions
                 SubTotal = order.SubTotal,
                 Status = order.Status.ToString(),
                 PaymentIntentId = order.PaymentIntentId,
-                Toatl = order.GetTotal()
+                Total = order.GetTotal()
             };
         }
 
