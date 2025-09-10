@@ -2,7 +2,7 @@
 {
     public class ShopingCart
     {
-        public required string Id { get; set; }
+        public required string Id { get; set; } = string.Empty;
         public int DeliveryMethodId { get; set; }
         public string? ClientSecret { get; set; }
         public string? PaymentIntentId { get; set; }

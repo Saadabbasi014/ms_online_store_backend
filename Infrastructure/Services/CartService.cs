@@ -29,7 +29,7 @@ namespace Infrastructure.Services
         public async Task<ShopingCart?> GetCartAsync(string id)
         {
             string key = $"cart:{id}";
-            var value = await _redisDb.StringGetAsync(id);
+            var value = await _redisDb.StringGetAsync(key);
             if (value.IsNullOrEmpty) return null;
 
             return JsonSerializer.Deserialize<ShopingCart>(value);
