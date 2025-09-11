@@ -1,24 +1,40 @@
 ﻿using Api.DTOs;
 using Api.Extensions;
+using Api.Hubs;
 using Core.Entites;
 using Core.Entites.OrderAggregate;
 using Core.Interfaces;
 using Core.Specification;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Stripe;
 
 namespace Api.Controllers
 {
-    public class OrdersController(ICartService cartService, IUnitOfWork unitOfWork) : BaseApiController
+    public class OrdersController : BaseApiController
     {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICartService _cartService;
+        private readonly IHubContext<NotificationHub> _hubContext;
+
+        public OrdersController(
+            ICartService cartService,
+            IUnitOfWork unitOfWork,
+            IHubContext<NotificationHub> hubContext)
+        {
+            _unitOfWork = unitOfWork;
+            _cartService = cartService;
+            _hubContext = hubContext;
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Order>> CreateOrder(CreateOrderDto orderDto)
         {
             var email = User.GetUserEmail();
 
-            var cart = await cartService.GetCartAsync(orderDto.CartId);
+            var cart = await _cartService.GetCartAsync(orderDto.CartId);
 
             if (cart == null) return BadRequest("Cart not found");
             if (string.IsNullOrEmpty(cart.PaymentIntentId)) return BadRequest("No payment intent for this order");
@@ -26,7 +42,7 @@ namespace Api.Controllers
             var items = new List<OrderItem>();
             foreach (var item in cart.Items)
             {
-                var productItem = await unitOfWork.Repository<Core.Entites.Product>().GetByIdAsync(item.ProductId);
+                var productItem = await _unitOfWork.Repository<Core.Entites.Product>().GetByIdAsync(item.ProductId);
 
                 if (productItem == null) return BadRequest("Problem with order");
 
@@ -46,7 +62,7 @@ namespace Api.Controllers
                 items.Add(orderItem);
             }
 
-            var deliveryMethod = await unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId);
+            var deliveryMethod = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId);
 
             if (deliveryMethod == null) return BadRequest("No delivery method selected.");
 
@@ -61,8 +77,8 @@ namespace Api.Controllers
                 BuyerEmail = email,
             };
 
-            await unitOfWork.Repository<Order>().AddAsync(order);
-            if (await unitOfWork.Complete())
+            await _unitOfWork.Repository<Order>().AddAsync(order);
+            if (await _unitOfWork.Complete())
             {
                 return order;
             }
@@ -75,7 +91,7 @@ namespace Api.Controllers
         {
             var spec = new OrderSpecification(User.GetUserEmail());
 
-            var orders = await unitOfWork.Repository<Order>().GetListAsync(spec);
+            var orders = await _unitOfWork.Repository<Order>().GetListAsync(spec);
 
             var orderToReturn = orders.Select(o => o.ToDto()).ToList();
 
@@ -87,11 +103,22 @@ namespace Api.Controllers
         {
             var spec = new OrderSpecification(User.GetUserEmail(), id);
 
-            var order = await unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+            var order = await _unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
 
             if (order == null) return NoContent();
 
             return order!.ToDto();
+        }
+
+        [HttpPost("update-status")]
+        public async Task<IActionResult> UpdateOrderStatus(string orderId, string status)
+        {
+            // Your order update logic (DB update, etc.)
+
+            // Notify connected clients
+            await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", orderId, status);
+
+            return Ok(new { orderId, status, message = "Order status updated and notification sent." });
         }
     }
 }

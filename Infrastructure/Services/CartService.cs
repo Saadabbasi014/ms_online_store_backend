@@ -29,8 +29,8 @@ namespace Infrastructure.Services
         public async Task<ShopingCart?> GetCartAsync(string id)
         {
             string key = $"cart:{id}";
-            var value = await _redisDb.StringGetAsync(key);
-            if (value.IsNullOrEmpty) return null;
+            var value = await _redisDb.StringGetAsync(id);
+            if (value.IsNullOrEmpty) return new ShopingCart { Id = Guid.NewGuid().ToString(), Items = new List<CartItem?>() }   ;
 
             return JsonSerializer.Deserialize<ShopingCart>(value);
         }

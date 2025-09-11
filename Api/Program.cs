@@ -32,19 +32,27 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<StoreContext>();
 
 
+//builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+//{
+//    var configuration = sp.GetRequiredService<IConfiguration>();
+//    var upstashUrl = configuration["Upstash:Url"];
+//    var upstashToken = configuration["Upstash:Token"];
+
+//    // Combine URL and token for StackExchange.Redis
+//    var connectionString = $"{upstashUrl},password={upstashToken}";
+//    return ConnectionMultiplexer.Connect(connectionString);
+//});
+
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("Redis");
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("Redis");
 
     var config = ConfigurationOptions.Parse(connectionString);
-
-    // Adjust depending on provider
-    config.Ssl = false; // Use true if you're on Azure or AWS, false if local Redis
-    config.Password = "RUx0khOatMoFNqvZHd4auY6VBCgOAym4";
-    config.AbortOnConnectFail = false; // Don't crash if Redis isn't immediately available
-
+    config.AbortOnConnectFail = false;
     return ConnectionMultiplexer.Connect(config);
 });
+
 
 var app = builder.Build();
 
