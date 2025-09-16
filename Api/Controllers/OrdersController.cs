@@ -78,6 +78,12 @@ namespace Api.Controllers
             };
 
             await _unitOfWork.Repository<Order>().AddAsync(order);
+
+            await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", order.Id, order.Status);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification",$"Order {order.Id} has been {order.Status}");
+
+
+
             if (await _unitOfWork.Complete())
             {
                 return order;

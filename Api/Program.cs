@@ -8,6 +8,7 @@ using StackExchange.Redis;
 using Infrastructure.Services;
 using Core.Entites;
 using Microsoft.AspNetCore.Identity;
+using Api.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.  
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddDbContext<StoreContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -30,18 +32,6 @@ builder.Services.AddAuthentication();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<StoreContext>();
-
-
-//builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-//{
-//    var configuration = sp.GetRequiredService<IConfiguration>();
-//    var upstashUrl = configuration["Upstash:Url"];
-//    var upstashToken = configuration["Upstash:Token"];
-
-//    // Combine URL and token for StackExchange.Redis
-//    var connectionString = $"{upstashUrl},password={upstashToken}";
-//    return ConnectionMultiplexer.Connect(connectionString);
-//});
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
@@ -72,12 +62,12 @@ app.UseMiddleware<ExceptionMiddlewere>();
 
 app.UseCors(policy =>
     policy.AllowAnyHeader()
-          .AllowCredentials()
           .AllowAnyMethod()
           .WithOrigins("https://localhost:4200", "http://localhost:4200")
           .AllowCredentials());
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub"); 
 app.MapGroup("api").MapIdentityApi<AppUser>();
 
 try
